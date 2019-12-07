@@ -1,8 +1,6 @@
 import React from 'react';
 import StripeCheckout from 'react-stripe-checkout';
 
-import env from '../../.env';
-
 const StripeCheckoutButton = ({price}) => {
   const priceForStripe = price * 100;
   const publishableKey = 'pk_test_nXHz3Kp536hV4DxznWYTUixE009QSVwRAb';
