@@ -1,0 +1,132 @@
+Index: src/components/collection-item/collection-item.component.jsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import React from 'react';\n\nimport {connect} from 'react-redux';\n\nimport CustomButton from '../custom-button/custom-button.component';\nimport {addItem} from '../../redux/cart/cart.actions';\n\nimport './collection-item.styles.scss';\n\nconst CollectionItem = ({item, addItem}) => {\n  const {name, price, imageUrl} = item;\n  return (\n    <div className='collection-item'>\n      <div\n        className='image'\n        style={{\n          backgroundImage: `url(${imageUrl})`\n        }}\n      />\n      <div className='collection-footer'>\n        <span className='name'>{name}</span>\n        <span className='price'>{price}</span>\n      </div>\n      <CustomButton inverted onClick={() => addItem(item)}>\n        Add to cart\n      </CustomButton>\n    </div>\n  );\n};\n\nconst mapDispatchToProps = dispatch => ({\n  addItem: item => dispatch(addItem(item))\n});\n\nexport default connect(\n  null,\n  mapDispatchToProps\n)(CollectionItem);\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/components/collection-item/collection-item.component.jsx	(revision 36d9fb267a142e7e885d0884cbce4eece8812d07)
++++ src/components/collection-item/collection-item.component.jsx	(date 1575830212340)
+@@ -21,7 +21,10 @@
+         <span className='name'>{name}</span>
+         <span className='price'>{price}</span>
+       </div>
+-      <CustomButton inverted onClick={() => addItem(item)}>
++      <CustomButton
++        className='custom-button'
++        inverted
++        onClick={() => addItem(item)}>
+         Add to cart
+       </CustomButton>
+     </div>
+Index: src/pages/shop-page/shop-page.component.jsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import React from 'react';\nimport {Route} from 'react-router-dom';\n\nimport CollectionsOverview from '../../components/collections-overview/collections-overview.component';\nimport CollectionPage from '../collection/collection-page.component';\n\nconst ShopPage = ({match})  => {\n  console.log(match);\n  return (\n    <div>\n      <Route exact path={`${match.path}`} component={CollectionsOverview} />\n      <Route path={`${match.path}/:collectionId`} component={CollectionPage}/>\n    </div>\n  );\n};\n\n\nexport default ShopPage;\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/pages/shop-page/shop-page.component.jsx	(revision 36d9fb267a142e7e885d0884cbce4eece8812d07)
++++ src/pages/shop-page/shop-page.component.jsx	(date 1575905868568)
+@@ -1,18 +1,31 @@
+ import React from 'react';
+ import {Route} from 'react-router-dom';
+ 
++import {firestore, convertCollectionsSnapshotToMap} from '../../firebase/firebase.utils';
++
+ import CollectionsOverview from '../../components/collections-overview/collections-overview.component';
+ import CollectionPage from '../collection/collection-page.component';
+ 
+-const ShopPage = ({match})  => {
+-  console.log(match);
+-  return (
+-    <div>
+-      <Route exact path={`${match.path}`} component={CollectionsOverview} />
+-      <Route path={`${match.path}/:collectionId`} component={CollectionPage}/>
+-    </div>
+-  );
+-};
++class ShopPage extends React.Component {
++  unsubscribeFromSnapshot = null;
++
++  componentDidMount() {
++    const collectionRef = firestore.collection('collections');
++    collectionRef.onSnapshot(async snapshot => {
++      convertCollectionsSnapshotToMap(snapshot);
++    });
++  }
++
++  render() {
++    const {match} = this.props;
++    return (
++      <div>
++        <Route exact path={`${match.path}`} component={CollectionsOverview} />
++        <Route path={`${match.path}/:collectionId`} component={CollectionPage}/>
++      </div>
++    );
++  }
++}
+ 
+ 
+ export default ShopPage;
+Index: src/components/sign-in/sign-in.component.jsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import React from 'react';\n\nimport './sign-in.styles.scss';\nimport FormInput from '../form-input/form-input.component';\nimport CustomButton from '../custom-button/custom-button.component';\n\nimport {signInWithGoogle, auth} from '../../firebase/firebase.utils';\n\nclass SignIn extends React.Component {\n  constructor(props) {\n    super(props);\n\n    this.state = {\n      email: '',\n      password: ''\n    }\n  }\n\n  handleSubmit = async (event) => {\n    event.preventDefault();\n\n    const {email, password} = this.state;\n\n    try {\n      await auth.signInWithEmailAndPassword(email, password);\n    } catch (error) {\n    console.log(error);\n    }\n    this.setState({email: '', password: ''});\n  };\n\n  handleChange = event => {\n    const {value, name} = event.target;\n\n    this.setState({ [name]: value });\n  };\n\n  render() {\n    return (\n      <div className='sign-in'>\n        <h2>I already have an account</h2>\n        <span>Sign in with your email or password</span>\n\n        <form onSubmit={this.handleSubmit}>\n          <FormInput\n            type=\"email\"\n            name='email'\n            handleChange={this.handleChange}\n            value={this.state.email}\n            label='email'\n            required/>\n          <FormInput\n            type=\"password\"\n            name='password'\n            handleChange={this.handleChange}\n            value={this.state.password}\n            label='password'\n            required/>\n\n          <div className='buttons'>\n            <CustomButton type=\"submit\">\n              Sign In\n            </CustomButton>\n            <CustomButton onClick={signInWithGoogle} isGoogleSigIn>Sing in with Google</CustomButton>\n          </div>\n        </form>\n      </div>\n    )\n  }\n}\n\nexport default SignIn;\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/components/sign-in/sign-in.component.jsx	(revision 36d9fb267a142e7e885d0884cbce4eece8812d07)
++++ src/components/sign-in/sign-in.component.jsx	(date 1575905578214)
+@@ -24,7 +24,7 @@
+     try {
+       await auth.signInWithEmailAndPassword(email, password);
+     } catch (error) {
+-    console.log(error);
++      console.log(error);
+     }
+     this.setState({email: '', password: ''});
+   };
+Index: src/firebase/firebase.utils.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import firebase from 'firebase/app';\nimport 'firebase/firestore';\nimport 'firebase/auth';\n\nconst config = {\n  apiKey: \"AIzaSyDqWw5gcvbJUgw1TG6YlS9P5oLj-q0J2gs\",\n  authDomain: \"crwn-db-92010.firebaseapp.com\",\n  databaseURL: \"https://crwn-db-92010.firebaseio.com\",\n  projectId: \"crwn-db-92010\",\n  storageBucket: \"crwn-db-92010.appspot.com\",\n  messagingSenderId: \"753846286405\",\n  appId: \"1:753846286405:web:c713a1a5fb45009e600b2c\"\n};\n\nfirebase.initializeApp(config);\n\nexport const auth = firebase.auth();\nexport const firestore = firebase.firestore();\n\nexport const createUserProfileDocument = async (userAuth, additionalData) => {\n  if (!userAuth) return;\n\n  const userRef = firestore.doc(`users/${userAuth.uid}`);\n  const snapshot = await userRef.get();\n\n  if (!snapshot.exists) {\n    const {displayName, email} = userAuth;\n    const createdAt = new Date();\n\n    try {\n      await userRef.set({\n        displayName,\n        email,\n        createdAt,\n        ...additionalData\n      })\n    } catch(error) {\n      console.log('Error creating user', error);\n    }\n  }\n\n  return userRef;\n};\n\nconst provider = new firebase.auth.GoogleAuthProvider();\nprovider.setCustomParameters({prompt: 'select_account'});\nexport const signInWithGoogle = () => auth.signInWithPopup(provider);\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- src/firebase/firebase.utils.js	(revision 36d9fb267a142e7e885d0884cbce4eece8812d07)
++++ src/firebase/firebase.utils.js	(date 1575905868566)
+@@ -42,6 +42,33 @@
+   return userRef;
+ };
+ 
++export const addCollectionAndDocuments = async (collectionKey, objectsToAdd) => {
++  const collectionRef = firestore.collection(collectionKey);
++
++  const batch = firestore.batch();
++  objectsToAdd.forEach(obj => {
++    const newDocRef = collectionRef.doc();
++    batch.set(newDocRef, obj);
++  });
++
++  return await batch.commit();
++};
++
++export const convertCollectionsSnapshotToMap = collectionsSnapshot => {
++  const transformedCollection = collectionsSnapshot.docs.map(docSnapshot => {
++    const {title, items} = docSnapshot.data();
++
++    return {
++      routeName: encodeURI(title.toLowerCase()),
++      id: docSnapshot.id,
++      title,
++      items
++    }
++  });
++
++  console.log(transformedCollection);
++};
++
+ const provider = new firebase.auth.GoogleAuthProvider();
+ provider.setCustomParameters({prompt: 'select_account'});
+ export const signInWithGoogle = () => auth.signInWithPopup(provider);
